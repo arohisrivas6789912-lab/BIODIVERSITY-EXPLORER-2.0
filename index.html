@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Explore India's biodiversity, endangered species, national parks, and wildlife travel planning tools.">
+    <title>Biodiversity Awareness | India's Wildlife Explorer</title>
+    <script>
+        (() => {
+            try {
+                const savedTheme = localStorage.getItem("biodiversity-theme") || "light";
+                document.documentElement.setAttribute("data-theme", savedTheme);
+            } catch (e) {
+                document.documentElement.setAttribute("data-theme", "light");
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+
+<body>
+    <header class="site-header">
+        <nav class="navbar" aria-label="Primary navigation">
+            <a class="logo" href="#home" aria-label="Biodiversity Explorer home">
+                <span class="logo-mark" aria-hidden="true">BE</span>
+                <span class="logo-text">Biodiversity Explorer</span>
+            </a>
+
+            <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu"
+                aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-links" id="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#explore">Explore</a></li>
+                <li><a href="#states">States</a></li>
+                <li><a href="#parks">Parks</a></li>
+                <li><a href="#recommendation">Recommendation</a></li>
+                <li><a href="#planner">Planner</a></li>
+                <li><a href="#responsible-tourism">Responsible Tourism</a></li>
+                <li><a href="#conservation">Conservation</a></li>
+                <li><a href="#threat-simulator">Simulator</a></li>
+                <li><a href="#quiz">Quiz</a></li>
+                <li><a href="#stats">Stats</a></li>
+            </ul>
+
+            <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode"
+                aria-pressed="false">
+                <span class="theme-toggle-icon" aria-hidden="true">☀️</span>
+                <span class="theme-toggle-label">Light</span>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-media" aria-hidden="true"></div>
+            <div class="hero-content">
+                <p class="eyebrow anim-hero-1">India wildlife conservation</p>
+                <h1 class="anim-hero-2">Discover India's Living Biodiversity</h1>
+                <p class="hero-copy anim-hero-3">
+                    Explore flagship species, protected habitats, conservation status, park highlights,
+                    and simple trip estimates in one polished wildlife guide.
+                </p>
+                <div class="hero-actions anim-hero-4">
+                    <button class="btn btn-primary" type="button" onclick="exploreBiodiversity()">Start
+                        exploring</button>
+                    <a class="btn btn-secondary" href="#planner">Plan a park visit</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="explore" class="section reveal">
+            <div class="section-heading">
+                <p class="eyebrow">Species explorer</p>
+                <h2>Search India's Wildlife</h2>
+                <p class="section-subtitle">Filter by species name, conservation status, or state.</p>
+            </div>
+
+            <div class="filter-panel" aria-label="Species filters">
+                <label>
+                    <span>Search species</span>
+                    <input type="search" id="animal-search" placeholder="Tiger, elephant, red panda..."
+                        oninput="filterAnimals()">
+                </label>
+
+                <label>
+                    <span>Conservation status</span>
+                    <select id="status-filter" onchange="filterAnimals()">
+                        <option value="">All status</option>
+                        <option value="Critically Endangered">Critically Endangered</option>
+                        <option value="Endangered">Endangered</option>
+                        <option value="Vulnerable">Vulnerable</option>
+                        <option value="Least Concern">Least Concern</option>
+                    </select>
+                </label>
+
+                <label>
+                    <span>State or region</span>
+                    <select id="habitat-filter" onchange="filterAnimals()">
+                        <option value="">All states</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="West Bengal">West Bengal</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Sikkim">Sikkim</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                        <option value="Bihar">Bihar</option>
+                    </select>
+                </label>
+
+                <button class="btn btn-quiet" type="button" onclick="resetFilters()">Reset</button>
+            </div>
+
+            <div id="animal-container" class="animal-grid" aria-live="polite"></div>
+        </section>
+
+        <section id="states" class="section feature-band reveal">
+            <div class="section-heading">
+                <p class="eyebrow">Regional view</p>
+                <h2>Wildlife Distribution Map</h2>
+                <p class="section-subtitle">Click on any national park marker to explore animals and conservation
+                    details.</p>
+            </div>
+
+            <div id="wildlife-map" class="wildlife-map"
+                aria-label="Interactive India wildlife map with national parks marked"></div>
+            <div id="map-info-panel" class="map-info-panel" aria-live="polite">
+                <div id="map-info-content"></div>
+            </div>
+        </section>
+
+        <section id="parks" class="section reveal">
+            <div class="section-heading">
+                <p class="eyebrow">Protected habitats</p>
+                <h2>National Parks Explorer</h2>
+                <p class="section-subtitle">Discover ecosystems, species, nearby attractions, and stays.</p>
+            </div>
+
+            <div class="explorer-control">
+                <label for="park-select">Select a park</label>
+                <select id="park-select" onchange="explorePark()">
+                    <option value="">Choose a park...</option>
+                    <option value="Kanha National Park">Kanha National Park</option>
+                    <option value="Bandhavgarh National Park">Bandhavgarh National Park</option>
+                    <option value="Ranthambore National Park">Ranthambore National Park</option>
+                    <option value="Periyar National Park">Periyar National Park</option>
+                    <option value="Kaziranga National Park">Kaziranga National Park</option>
+                    <option value="Singalila National Park">Singalila National Park</option>
+                    <option value="Sundarbans National Park">Sundarbans National Park</option>
+                    <option value="Gir National Park">Gir National Park</option>
+                    <option value="Keoladeo National Park">Keoladeo National Park</option>
+                    <option value="Great Himalayan National Park">Great Himalayan National Park</option>
+                </select>
+            </div>
+            <div id="park-result" class="explorer-result" aria-live="polite"></div>
+            <div id="park-map-grid" class="park-map-grid" aria-label="Locations of national parks"></div>
+        </section>
+
+        <section id="recommendation" class="section recommendation-section reveal">
+            <div class="section-heading">
+                <p class="eyebrow">Intelligent matching</p>
+                <h2>Smart Recommendations</h2>
+                <p class="section-subtitle">Recommendations are generated from your selected species, interests, preferred ecosystem, and travel activity—so parks and wildlife stay relevant to what you want to explore.</p>
+            </div>
+
+            <div class="recommendation-container">
+                <form id="recommendation-form" class="recommendation-form reco-dashboard"
+                    onsubmit="getRecommendation(); return false;">
+                    <div class="question-group reco-question">
+                        <h3 class="reco-question-title">
+                            <span class="reco-question-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.1" fill="currentColor" stroke="none"/><path d="M8 15c1.2 1.3 2.5 2 4 2s2.8-.7 4-2"/></svg>
+                            </span>
+                            What Animals Interest You Most?
+                        </h3>
+                        <div class="options-grid">
+                            <label class="option-card">
+                                <input type="checkbox" name="animal" value="tiger">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9c0-2 1.5-4 3.5-4 .8 0 1.5.3 2 .8.5-.5 1.2-.8 2-.8.8 0 1.5.3 2 .8.5-.5 1.2-.8 2-.8C18.5 5 20 7 20 9c0 5-3.6 9-8 9s-8-4-8-9Z"/><path d="M9 13h.01M15 13h.01M10 16c.6.5 1.3.8 2 .8s1.4-.3 2-.8"/></svg>
+                                    </span>
+                                    <span class="card-label">Tigers</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="checkbox" name="animal" value="elephant">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15c0-4 2.5-7 6-7 4.2 0 7 3.2 7 7v3"/><path d="M6 16c-1.5 0-2.5 1.2-2.5 2.6S5 21 6.2 21H8"/><path d="M19 18c1.8 1 2.2 3-1 3h-3"/><path d="M13 10v8M17 12c1.2 0 2.5.6 3.5 2"/></svg>
+                                    </span>
+                                    <span class="card-label">Elephants</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="checkbox" name="animal" value="panda">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.2"/><circle cx="16" cy="8" r="2.2"/><circle cx="12" cy="13.5" r="5.5"/><circle cx="10" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="14" cy="13" r="1" fill="currentColor" stroke="none"/><path d="M10.5 16h3"/></svg>
+                                    </span>
+                                    <span class="card-label">Red Pandas</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="checkbox" name="animal" value="rhino">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16c0-3 2-7 7-8 3-.6 5 .2 7 2l4 1-2 3c.2 1.4-1 3-3 3H8c-2.2 0-4-1.2-4-1z"/><path d="M14 8V4M8 19v1M16 19v1"/></svg>
+                                    </span>
+                                    <span class="card-label">Rhinos</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="checkbox" name="animal" value="birds">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14c4-1 7-4 8-8 3 2 6 6 5 10-3 0-6-1-8-3"/><path d="M9 16c1 2 3 4 7 5"/><circle cx="16.5" cy="8.5" r=".8" fill="currentColor" stroke="none"/></svg>
+                                    </span>
+                                    <span class="card-label">Rare Birds</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="checkbox" name="animal" value="deer">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8c-1-2-1-4 1-5M16 8c1-2 1-4-1-5M9 9c1 1 2 1.5 3 1.5S14 10 15 9"/><path d="M12 10.5c-3 0-5 2.2-5 5.5 0 2 1.5 4 5 4s5-2 5-4c0-3.3-2-5.5-5-5.5Z"/></svg>
+                                    </span>
+                                    <span class="card-label">Deer &amp; Herbivores</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="checkbox" name="animal" value="aquatic">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12c4-4 8-4 12 0-4 4-8 4-12 0Z"/><path d="M16 12c2 0 3.5-1.2 4.5-2.5M16 12c2 0 3.5 1.2 4.5 2.5"/><circle cx="8" cy="12" r=".8" fill="currentColor" stroke="none"/></svg>
+                                    </span>
+                                    <span class="card-label">River Wildlife &amp; Crocodilians</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="checkbox" name="animal" value="lion">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M4.9 6.5l1.6 1.2M17.5 16.3l1.6 1.2M3 12h2M19 12h2M4.9 17.5l1.6-1.2M17.5 7.7l1.6-1.2"/></svg>
+                                    </span>
+                                    <span class="card-label">Asiatic Lions</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="question-group reco-question">
+                        <h3 class="reco-question-title">
+                            <span class="reco-question-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.3-7-11a7 7 0 1 1 14 0c0 5.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>
+                            </span>
+                            What Ecosystem Appeals To You?
+                        </h3>
+                        <div class="options-grid">
+                            <label class="option-card">
+                                <input type="radio" name="ecosystem" value="tropical">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V11"/><path d="M12 11c-3-4-7-5-7-5 2 4 2 5 2 5"/><path d="M12 11c3-4 7-5 7-5-2 4-2 5-2 5"/><path d="M8 21h8"/></svg>
+                                    </span>
+                                    <span class="card-label">Tropical Forests</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="ecosystem" value="grassland">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c2-4 3-8 3-8M8 18c1.5-5 2-9 2-9M13 18c1-4 1.5-8 1.5-8M18 18c1.2-3.5 2.2-7 2.2-7"/><path d="M3 18h18"/></svg>
+                                    </span>
+                                    <span class="card-label">Grasslands &amp; Wetlands</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="ecosystem" value="mountain">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 18 5.5-8 3 4 2.2-3.2L20 18Z"/><path d="m13.2 12.2 1.8-2.6L18 13"/></svg>
+                                    </span>
+                                    <span class="card-label">Mountain Forests</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="ecosystem" value="dry">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6 19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4 19 5"/></svg>
+                                    </span>
+                                    <span class="card-label">Dry Deciduous Forests</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="question-group reco-question">
+                        <h3 class="reco-question-title">
+                            <span class="reco-question-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 5v2M12 17v2M5 12h2M17 12h2"/></svg>
+                            </span>
+                            What's Your Preferred Activity?
+                        </h3>
+                        <div class="options-grid">
+                            <label class="option-card">
+                                <input type="radio" name="activity" value="safari">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15h18l-1.5-5H8L3 15Z"/><path d="M7 15v2.5M17 15v2.5"/><circle cx="7" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/><path d="M9 10V7h4l3 3"/></svg>
+                                    </span>
+                                    <span class="card-label">Jeep Safari</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="activity" value="trekking">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="m8 21 3-8 2 3 3 5M11 13 8 10l4-2 3 3"/></svg>
+                                    </span>
+                                    <span class="card-label">Trekking &amp; Hiking</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="activity" value="boating">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h16l-2 4H6l-2-4Z"/><path d="M12 6v8M9 8h6"/><path d="M5 20c1.5-1 3.5-1 5 0s3.5 1 5 0 3.5-1 5 0"/></svg>
+                                    </span>
+                                    <span class="card-label">Boating &amp; Lakes</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="activity" value="photography">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z"/><circle cx="12" cy="13.5" r="3.2"/></svg>
+                                    </span>
+                                    <span class="card-label">Wildlife Photography</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="question-group reco-question">
+                        <h3 class="reco-question-title">
+                            <span class="reco-question-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+                            </span>
+                            When Do You Prefer To Visit?
+                        </h3>
+                        <div class="options-grid">
+                            <label class="option-card">
+                                <input type="radio" name="season" value="dry">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 3v2M12 19v2M5 5l1.5 1.5M17.5 17.5 19 19M3 12h2M19 12h2M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
+                                    </span>
+                                    <span class="card-label">Dry Season (Oct-May)</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="season" value="monsoon">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16c-2.5 0-4-1.8-4-4 0-3 2.5-4.8 5.2-4.3C10.2 5.5 12 4 14.2 4 17 4 19 6.1 19 8.8c2 0 3 1.7 3 3.2 0 2-1.6 4-4 4"/><path d="M8 19v1M12 18v2M16 19v1"/></svg>
+                                    </span>
+                                    <span class="card-label">Monsoon (Jun-Sep)</span>
+                                </span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="season" value="any">
+                                <span class="card-content">
+                                    <span class="card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg>
+                                    </span>
+                                    <span class="card-label">Any Time</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary reco-submit-btn" type="submit">Get My Park Recommendation</button>
+                </form>
+
+                <div id="recommendation-result" class="recommendation-result" aria-live="polite" style="display: none;">
+                    <div id="recommendation-content"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="planner" class="section planner-section reveal">
+            <div class="section-heading">
+                <p class="eyebrow">Trip planner</p>
+                <h2>Budget a Wildlife Visit</h2>
+                <p class="section-subtitle">Estimate transport, stay, food, tickets, guide, and safari costs.</p>
+            </div>
+
+            <div class="planner-grid">
+                <form class="planner-panel" onsubmit="calculateTrip(); return false;">
+                    <h3>Trip details</h3>
+
+                    <label>
+                        <span>National park</span>
+                        <select id="trip-park" onchange="loadParkCosts()">
+                            <option value="">Choose a park...</option>
+                            <option value="Kanha National Park">Kanha National Park</option>
+                            <option value="Bandhavgarh National Park">Bandhavgarh National Park</option>
+                            <option value="Ranthambore National Park">Ranthambore National Park</option>
+                            <option value="Periyar National Park">Periyar National Park</option>
+                            <option value="Kaziranga National Park">Kaziranga National Park</option>
+                            <option value="Singalila National Park">Singalila National Park</option>
+                            <option value="Sundarbans National Park">Sundarbans National Park</option>
+                            <option value="Gir National Park">Gir National Park</option>
+                            <option value="Keoladeo National Park">Keoladeo National Park</option>
+                            <option value="Great Himalayan National Park">Great Himalayan National Park</option>
+                        </select>
+                    </label>
+
+                    <div class="input-row">
+                        <label>
+                            <span>Days</span>
+                            <input type="number" id="days" min="1" max="30" value="3">
+                        </label>
+                        <label>
+                            <span>Number of Visitors</span>
+                            <input type="number" id="visitors" min="1" max="50" value="1">
+                        </label>
+                    </div>
+
+                    <div class="input-row">
+                        <label>
+                            <span>Distance (km)</span>
+                            <input type="number" id="distance" min="0" placeholder="0" value="250">
+                        </label>
+                        <label aria-label="blank spacer">
+                            <span>&nbsp;</span>
+                            <span style="display:block; height:46px;">&nbsp;</span>
+                        </label>
+                    </div>
+
+                    <div class="planner-actions">
+                        <button class="btn btn-quiet" type="button" onclick="getDistance()">Use my location</button>
+                        <button class="btn btn-secondary" type="button" onclick="findNearestPark()">Near me</button>
+                    </div>
+                    <p id="location-status" class="status-text" aria-live="polite"></p>
+
+                    <div class="input-row">
+                        <label>
+                            <span>Transport (INR)</span>
+                            <input type="number" id="transport-cost" min="0" value="5000">
+                        </label>
+                        <label>
+                            <span>Hotel/night (INR)</span>
+                            <input type="number" id="hotel-cost" min="0" placeholder="0">
+                        </label>
+                    </div>
+
+                    <div class="input-row">
+                        <label>
+                            <span>Food/day (INR)</span>
+                            <input type="number" id="food-cost" min="0" placeholder="0">
+                        </label>
+                        <label>
+                            <span>Entry ticket (INR)</span>
+                            <input type="number" id="ticket-cost" min="0" placeholder="0">
+                        </label>
+                    </div>
+
+                    <div class="input-row">
+                        <label>
+                            <span>Guide (INR)</span>
+                            <input type="number" id="guide-cost" min="0" placeholder="0">
+                        </label>
+                        <label>
+                            <span>Safari (INR)</span>
+                            <input type="number" id="activity-cost" min="0" placeholder="0">
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary full-width" type="submit">Calculate trip cost</button>
+                </form>
+
+                <aside class="planner-panel result-panel">
+                    <div id="trip-result" class="result-container placeholder">
+                        Select a park and calculate your estimated trip cost.
+                    </div>
+                    <div id="weather-result" class="result-container"></div>
+                    <button id="weather-button" class="btn btn-secondary full-width" type="button"
+                        onclick="getWeather()">Check travel weather</button>
+                    <div id="booking-links" class="booking-links" aria-live="polite"></div>
+                </aside>
+            </div>
+        </section>
+
+        <section id="responsible-tourism" class="section tourism-section reveal">
+            <div class="section-heading">
+                <p class="eyebrow">Travel with care</p>
+                <h2>Responsible Wildlife Tourism</h2>
+                <p class="section-subtitle">Explore wildlife. Respect nature. Leave a positive impact.</p>
+            </div>
+
+            <div class="tourism-intro-panel">
+                <h3>🌿 Responsible Wildlife Tourism</h3>
+                <p class="tourism-tagline">Explore wildlife. Respect nature. Leave a positive impact.</p>
+                <p>Responsible wildlife tourism lets you enjoy India's parks and species without crowding animals, damaging habitats, or harming the communities who live beside them. Good visits follow park rules, keep disturbance low, and support conservation-friendly local livelihoods.</p>
+                <button class="btn btn-primary" type="button" onclick="document.getElementById('wildlife-etiquette')?.scrollIntoView({ behavior: 'smooth' })">Learn Responsible Tourism</button>
+            </div>
+
+            <div id="wildlife-etiquette" class="tourism-block">
+                <h3>🐾 Wildlife Etiquette</h3>
+                <p class="tourism-block-copy">Use these habits on every safari, trail, and hide visit.</p>
+                <div class="tourism-card-grid">
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">📏</span>
+                        <h4>Keep a Safe Distance</h4>
+                        <p>Give animals space to feed, rest, and move. If behaviour changes, you are already too close.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">🤫</span>
+                        <h4>Keep Noise Low</h4>
+                        <p>Speak softly and avoid sudden sounds. Quiet visitors see more wildlife and cause less stress.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">🚫</span>
+                        <h4>Never Feed Wildlife</h4>
+                        <p>Human food changes natural foraging, increases conflict, and can make animals dangerously bold.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">📷</span>
+                        <h4>Photograph Responsibly</h4>
+                        <p>Use zoom, stay with your group, and never force a pose, call, or closer approach for a shot.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">🛤️</span>
+                        <h4>Stay on Designated Routes</h4>
+                        <p>Marked tracks protect nesting sites, reduce erosion, and keep you and wildlife safer.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">🍃</span>
+                        <h4>Leave No Trace</h4>
+                        <p>Carry waste out, skip single-use litter, and leave plants, feathers, and nests where they are.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">🏡</span>
+                        <h4>Respect Wildlife Habitats</h4>
+                        <p>Do not enter dens, waterholes, or breeding areas. Habitat peace is part of a successful sighting.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">🤝</span>
+                        <h4>Respect Local Communities</h4>
+                        <p>Ask before photographing people, follow village customs, and choose tourism that benefits residents.</p>
+                    </article>
+                </div>
+            </div>
+
+            <div class="tourism-block">
+                <h3>✅ DO vs ❌ DON'T</h3>
+                <p class="tourism-block-copy">A quick comparison for every park visit.</p>
+                <div class="tourism-compare-grid">
+                    <article class="tourism-compare-card tourism-do">
+                        <h4>✅ DO</h4>
+                        <ul class="park-list">
+                            <li>Keep a safe distance</li>
+                            <li>Follow park rules</li>
+                            <li>Stay quiet</li>
+                            <li>Stay on designated routes</li>
+                            <li>Listen to authorized guides</li>
+                            <li>Reduce waste</li>
+                            <li>Support responsible local businesses</li>
+                        </ul>
+                    </article>
+                    <article class="tourism-compare-card tourism-dont">
+                        <h4>❌ DON'T</h4>
+                        <ul class="park-list">
+                            <li>Feed animals</li>
+                            <li>Chase wildlife</li>
+                            <li>Shout to attract animals</li>
+                            <li>Disturb nests or breeding areas</li>
+                            <li>Litter</li>
+                            <li>Touch wild animals</li>
+                            <li>Buy wildlife-derived products</li>
+                        </ul>
+                    </article>
+                </div>
+            </div>
+
+            <div class="tourism-block">
+                <article class="tourism-photo-panel">
+                    <h3>📸 Responsible Wildlife Photography</h3>
+                    <p class="tourism-tagline">Be a Wildlife Photographer, Not a Wildlife Disturber</p>
+                    <ul class="park-list">
+                        <li>Use distance and optical zoom instead of moving closer</li>
+                        <li>Never manipulate animal behaviour for a photograph</li>
+                        <li>Don't block an animal's path or surround it with vehicles</li>
+                        <li>Don't disturb nesting, feeding, or resting animals</li>
+                        <li>Follow photography restrictions and guide instructions in each park</li>
+                    </ul>
+                </article>
+            </div>
+
+            <div class="tourism-block">
+                <h3>🌱 Responsible Travel Choices</h3>
+                <p class="tourism-block-copy">How will you travel? Choose one option to see an educational responsibility indicator — not an exact carbon-footprint calculation.</p>
+                <fieldset class="tourism-choice-set">
+                    <legend class="visually-hidden">How will you travel?</legend>
+                    <div class="tourism-choice-grid">
+                        <label class="tourism-choice-card">
+                            <input type="radio" name="tourism-travel-mode" value="public">
+                            <span class="tourism-choice-content">
+                                <span class="tourism-card-icon" aria-hidden="true">🚆</span>
+                                <span class="tourism-choice-label">Public Transport</span>
+                            </span>
+                        </label>
+                        <label class="tourism-choice-card">
+                            <input type="radio" name="tourism-travel-mode" value="shared">
+                            <span class="tourism-choice-content">
+                                <span class="tourism-card-icon" aria-hidden="true">🚌</span>
+                                <span class="tourism-choice-label">Shared Transport</span>
+                            </span>
+                        </label>
+                        <label class="tourism-choice-card">
+                            <input type="radio" name="tourism-travel-mode" value="private">
+                            <span class="tourism-choice-content">
+                                <span class="tourism-card-icon" aria-hidden="true">🚗</span>
+                                <span class="tourism-choice-label">Private Vehicle</span>
+                            </span>
+                        </label>
+                        <label class="tourism-choice-card">
+                            <input type="radio" name="tourism-travel-mode" value="walk">
+                            <span class="tourism-choice-content">
+                                <span class="tourism-card-icon" aria-hidden="true">🚶</span>
+                                <span class="tourism-choice-label">Walking/Cycling where permitted</span>
+                            </span>
+                        </label>
+                    </div>
+                </fieldset>
+                <div id="tourism-travel-score" class="tourism-score-box" aria-live="polite"></div>
+            </div>
+
+            <div class="tourism-block">
+                <h3>🏡 Support Local Communities</h3>
+                <p class="tourism-block-copy">Responsible visits should strengthen people who protect and live near wildlife.</p>
+                <div class="tourism-card-grid tourism-community-grid">
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">🧭</span>
+                        <h4>Choose authorized local guides</h4>
+                        <p>Licensed local guides know park rules, reduce risk, and keep tourism income in the community.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">🛏️</span>
+                        <h4>Stay responsibly</h4>
+                        <p>Consider lodges and homestays that follow park regulations and treat staff and land fairly.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">🛍️</span>
+                        <h4>Support genuine local businesses</h4>
+                        <p>Buy crafts and services from local artisans. Avoid souvenirs made from wildlife parts.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">🙏</span>
+                        <h4>Respect traditions</h4>
+                        <p>Dress modestly where asked, ask permission before photos, and treat villages as homes, not exhibits.</p>
+                    </article>
+                    <article class="tourism-card">
+                        <span class="tourism-card-icon" aria-hidden="true">💚</span>
+                        <h4>Choose conservation-positive trips</h4>
+                        <p>Prefer operators whose fees and practices support habitat protection and local livelihoods.</p>
+                    </article>
+                </div>
+            </div>
+
+            <div class="tourism-block">
+                <h3>🚨 What Would You Do?</h3>
+                <p class="tourism-block-copy">Work through real safari situations, then see your Responsible Visitor Score.</p>
+                <div id="tourism-scenario-panel" class="quiz-panel tourism-scenario-panel">
+                    <div id="tourism-scenario-intro" class="quiz-intro">
+                        <h3>Ready to practise?</h3>
+                        <p>You will face five short scenarios. Choose the most responsible action for each one.</p>
+                        <button class="btn btn-primary" type="button" id="tourism-scenario-start">Start scenarios</button>
+                    </div>
+                    <form id="tourism-scenario-form" class="quiz-form" hidden>
+                        <div id="tourism-scenario-question"></div>
+                        <button class="btn btn-primary full-width" type="submit" id="tourism-scenario-submit">Check my choice</button>
+                    </form>
+                    <div id="tourism-scenario-feedback" class="tourism-feedback" aria-live="polite"></div>
+                    <div id="tourism-visitor-score" class="quiz-result" aria-live="polite"></div>
+                </div>
+            </div>
+
+            <div class="tourism-block">
+                <h3>☑️ Before You Visit Checklist</h3>
+                <p class="tourism-block-copy">Tick each item as you prepare. Progress updates as you go.</p>
+                <div class="quiz-panel">
+                    <p id="tourism-checklist-progress" class="tourism-progress" aria-live="polite">0 / 8 completed</p>
+                    <div class="tourism-checklist" id="tourism-checklist">
+                        <label class="quiz-option">
+                            <input type="checkbox" name="tourism-check" value="rules">
+                            <span>Check park rules</span>
+                        </label>
+                        <label class="quiz-option">
+                            <input type="checkbox" name="tourism-check" value="routes">
+                            <span>Follow authorized routes</span>
+                        </label>
+                        <label class="quiz-option">
+                            <input type="checkbox" name="tourism-check" value="reusable">
+                            <span>Carry reusable items where permitted</span>
+                        </label>
+                        <label class="quiz-option">
+                            <input type="checkbox" name="tourism-check" value="plastic">
+                            <span>Avoid unnecessary single-use plastic</span>
+                        </label>
+                        <label class="quiz-option">
+                            <input type="checkbox" name="tourism-check" value="distance">
+                            <span>Respect wildlife viewing distances</span>
+                        </label>
+                        <label class="quiz-option">
+                            <input type="checkbox" name="tourism-check" value="emergency">
+                            <span>Keep emergency/contact information available</span>
+                        </label>
+                        <label class="quiz-option">
+                            <input type="checkbox" name="tourism-check" value="communities">
+                            <span>Respect local communities</span>
+                        </label>
+                        <label class="quiz-option">
+                            <input type="checkbox" name="tourism-check" value="transport">
+                            <span>Plan transportation responsibly</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="conservation" class="section conservation-section reveal">
+            <div class="section-heading">
+                <p class="eyebrow">Conservation matters</p>
+                <h2>Why Wildlife Conservation Matters in India</h2>
+                <p class="section-subtitle">India's wildlife connects directly to water security, climate resilience,
+                    ecosystem stability, and sustainable livelihoods.</p>
+            </div>
+
+            <div class="conservation-grid">
+                <article class="conservation-card reveal">
+                    <h3>Protects Ecosystem Balance</h3>
+                    <p>Predators, herbivores, pollinators, and decomposers maintain delicate food webs. Losing one
+                        species impacts entire ecosystems.</p>
+                </article>
+                <article class="conservation-card reveal">
+                    <h3>Supports Clean Water and Air</h3>
+                    <p>Healthy catchment forests, wetlands, and grasslands filter groundwater, prevent severe flooding,
+                        and sequester carbon.</p>
+                </article>
+                <article class="conservation-card reveal">
+                    <h3>Protects India's Natural Heritage</h3>
+                    <p>From Bengal tigers to the Himalayan red panda, our native species represent a rich ecological
+                        legacy that requires active stewardship.</p>
+                </article>
+                <article class="conservation-card reveal">
+                    <h3>Empowers Sustainable Communities</h3>
+                    <p>Understanding wildlife fosters responsible eco-tourism, reduces human-animal conflict, and
+                        protects local livelihoods.</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="threat-simulator" class="section threat-simulator-section reveal">
+            <div class="section-heading">
+                <p class="eyebrow">Habitat risk</p>
+                <h2>🌳 Wildlife Threat Simulator</h2>
+                <p class="section-subtitle">See how deforestation reduces forest cover, wildlife habitat, and ecosystem
+                    resilience.</p>
+            </div>
+
+            <div class="threat-sim-panel">
+                <div class="threat-forest-panel">
+                    <div class="forest-header">
+                        <div>
+                            <span class="mini-label">Forest coverage</span>
+                            <h3><span id="forest-coverage-value">78</span>%</h3>
+                        </div>
+                        <button id="restore-forest" class="btn btn-primary" type="button">🌱 Restore Forest</button>
+                    </div>
+
+                    <div id="forest-scene" class="forest-scene" aria-live="polite"></div>
+
+                    <div class="slider-wrap">
+                        <label for="forest-slider">Deforestation pressure</label>
+                        <input id="forest-slider" type="range" min="0" max="100" value="78"
+                            aria-label="Forest coverage slider" />
+                    </div>
+                </div>
+
+                <div class="threat-metrics-panel">
+                    <div class="impact-badges" aria-label="Impact levels">
+                        <span class="impact-pill healthy active">Healthy</span>
+                        <span class="impact-pill moderate">Moderate</span>
+                        <span class="impact-pill major">Major</span>
+                        <span class="impact-pill severe">Severe</span>
+                    </div>
+
+                    <div class="metric-list">
+                        <div class="metric-row">
+                            <span>Forest Health</span>
+                            <strong id="forest-health-value">Healthy</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Wildlife Habitat</span>
+                            <strong id="habitat-value">Good</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Food Availability</span>
+                            <strong id="food-value">Strong</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Ecosystem Stability</span>
+                            <strong id="stability-value">Stable</strong>
+                        </div>
+                    </div>
+
+                    <div class="consequence-box">
+                        <p class="mini-label">Consequence chain</p>
+                        <div class="consequence-chain" aria-live="polite">
+                            <span>Deforestation</span>
+                            <span class="arrow">→</span>
+                            <span>Habitat Loss</span>
+                            <span class="arrow">→</span>
+                            <span>Less Food/Shelter</span>
+                            <span class="arrow">→</span>
+                            <span>Wildlife Decline</span>
+                            <span class="arrow">→</span>
+                            <span>Ecosystem Imbalance</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-panel">
+                    <div class="compare-card before-card">
+                        <p class="mini-label">Baseline scenario</p>
+                        <h4>Healthy Forest</h4>
+                        <ul>
+                            <li>Forest cover: <strong>100%</strong></li>
+                            <li>Wildlife habitat: <strong>High</strong></li>
+                            <li>Food supply: <strong>Abundant</strong></li>
+                        </ul>
+                    </div>
+                    <div class="compare-card after-card">
+                        <p class="mini-label">Current scenario</p>
+                        <h4>Simulated Response</h4>
+                        <ul>
+                            <li>Forest cover: <strong id="compare-forest">78%</strong></li>
+                            <li>Habitat pressure: <strong id="compare-habitat">Moderate</strong></li>
+                            <li>Recovery potential: <strong id="compare-recovery">High</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="quiz" class="section quiz-section reveal">
+            <div class="section-heading">
+                <p class="eyebrow">Wildlife quiz</p>
+                <h2>Test Your Knowledge of India's Wildlife</h2>
+                <p class="section-subtitle">Answer 10 randomized questions to test your wildlife awareness.</p>
+            </div>
+
+            <div class="quiz-panel">
+                <div id="quiz-intro" class="quiz-intro">
+                    <h3>Ready to begin?</h3>
+                    <p>Select the best answer for each question and see your score with personalized feedback.</p>
+                    <button class="btn btn-primary" type="button" onclick="startQuiz()">Start quiz</button>
+                </div>
+
+                <form id="quiz-form" class="quiz-form" onsubmit="submitQuiz(); return false;" hidden>
+                    <div id="quiz-questions"></div>
+                    <button class="btn btn-primary full-width" type="submit">Submit quiz</button>
+                </form>
+
+                <div id="quiz-result" class="quiz-result" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <section id="stats" class="section stats-section reveal">
+            <div class="section-heading">
+                <p class="eyebrow">At a glance</p>
+                <h2>Biodiversity Statistics</h2>
+                <p class="section-subtitle">India's key protected area metrics and wildlife conservation records.</p>
+            </div>
+
+            <div class="stats-grid">
+                <article class="stat-card reveal">
+                    <span class="stat-number" id="total-species">0</span>
+                    <h3>Total species</h3>
+                </article>
+                <article class="stat-card reveal">
+                    <span class="stat-number" id="total-sanctuaries">0</span>
+                    <h3>Wildlife sanctuaries</h3>
+                </article>
+                <article class="stat-card reveal">
+                    <span class="stat-number" id="total-parks">0</span>
+                    <h3>National parks</h3>
+                </article>
+                <article class="stat-card reveal">
+                    <span class="stat-number" id="endangered-species">0</span>
+                    <h3>Endangered</h3>
+                </article>
+                <article class="stat-card reveal">
+                    <span class="stat-number" id="vulnerable-species">0</span>
+                    <h3>Vulnerable</h3>
+                </article>
+                <article class="stat-card reveal">
+                    <span class="stat-number" id="least-concern-species">0</span>
+                    <h3>Least concern</h3>
+                </article>
+            </div>
+        </section>
+
+        <section id="report-generator" class="section report-section reveal">
+            <div class="section-heading">
+                <p class="eyebrow">Personal summary</p>
+                <h2>📄 Download Biodiversity Report</h2>
+                <p class="section-subtitle">Generate a personalised biodiversity summary from your activity in the app.
+                </p>
+            </div>
+
+            <div class="report-box">
+                <label for="report-user-name" class="report-name-label">
+                    <span>Your Name</span>
+                    <input id="report-user-name" type="text" placeholder="Enter your name (optional)" maxlength="50">
+                </label>
+                <button id="generate-report-btn" class="btn btn-primary" type="button">Generate Report</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="animal-popup" class="popup-overlay" aria-hidden="true"></div>
+
+    <div id="report-modal" class="report-modal" aria-hidden="true">
+        <div class="report-modal-card" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+            <button class="report-close-btn" type="button" aria-label="Close report preview"
+                onclick="closeReportPreview()">&times;</button>
+            <div id="report-preview-content"></div>
+            <div class="report-modal-actions">
+                <button id="report-download-btn" class="btn btn-primary" type="button">⬇️ Download PDF Report</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 Biodiversity Awareness. Dedicated to wildlife conservation in India.</p>
+        <p>Protecting nature. Preserving life. Building a sustainable future.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+        integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"
+        onerror="this.removeAttribute('integrity'); this.onload=function(){ if (typeof initializeWildlifeMap==='function') initializeWildlifeMap(); }; this.onerror=null; this.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"
+        onerror="this.removeAttribute('integrity'); this.onerror=null; this.src='https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js';"></script>
+    <script src="script.js" defer></script>
+
+</body>
+
+</html>
